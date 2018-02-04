@@ -16,30 +16,36 @@ use Gorghoa\ScenarioStateBehatExtension\Exception\MissingStateException;
 /**
  * @author Rodrigue Villetard <rodrigue.villetard@gmail.com>
  */
-interface ScenarioStateInterface
+interface StoreInterface
 {
     /**
      * @param string $key
      * @param mixed  $value
      */
-    public function provideStateFragment($key, $value);
+    public function add($key, $value);
+
+    /**
+     * @param string $key
+     * @param mixed  $value
+     */
+    public function remove($key);
 
     /**
      * @param string $key
      * @throws MissingStateException
      * @return mixed
      */
-    public function getStateFragment($key);
+    public function get($key);
 
     /**
      * @param string $key
      *
      * @return bool
      */
-    public function hasStateFragment($key);
+    public function has($key);
 
     /**
      * @return array
      */
-    public function getStateFragmentsKeys();
+    public function getKeys();
 }

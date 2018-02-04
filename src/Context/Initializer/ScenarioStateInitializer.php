@@ -15,8 +15,8 @@ use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Initializer\ContextInitializer;
 use Behat\Behat\EventDispatcher\Event\ScenarioTested;
 use Gorghoa\ScenarioStateBehatExtension\Context\ScenarioStateAwareContext;
-use Gorghoa\ScenarioStateBehatExtension\ScenarioState;
-use Gorghoa\ScenarioStateBehatExtension\ScenarioStateInterface;
+use Gorghoa\ScenarioStateBehatExtension\Store;
+use Gorghoa\ScenarioStateBehatExtension\StoreInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -25,7 +25,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class ScenarioStateInitializer implements ContextInitializer, EventSubscriberInterface
 {
     /**
-     * @var ScenarioStateInterface
+     * @var StoreInterface
      */
     private $store;
 
@@ -53,16 +53,16 @@ class ScenarioStateInitializer implements ContextInitializer, EventSubscriberInt
             return;
         }
 
-        $context->setScenarioState($this->store);
+        $context->setStore($this->store);
     }
 
     public function clearStore()
     {
-        $this->store = new ScenarioState();
+        $this->store = new Store();
     }
 
     /**
-     * @return ScenarioStateInterface
+     * @return StoreInterface
      */
     public function getStore()
     {

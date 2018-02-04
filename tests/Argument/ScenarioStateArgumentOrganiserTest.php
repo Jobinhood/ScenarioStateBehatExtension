@@ -21,7 +21,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 /**
  * @author Vincent Chalamon <vincentchalamon@gmail.com>
  */
-class ScenarioStateArgumentOrganiserTest extends \PHPUnit_Framework_TestCase
+class ScenarioStateArgumentOrganiserTest extends  \PHPUnit\Framework\TestCase
 {
     /**
      * @var ScenarioStateArgumentOrganiser

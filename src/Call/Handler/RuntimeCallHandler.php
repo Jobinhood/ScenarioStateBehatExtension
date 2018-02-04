@@ -11,12 +11,14 @@
 
 namespace Gorghoa\ScenarioStateBehatExtension\Call\Handler;
 
-use Behat\Behat\Transformation\Call\TransformationCall;
-use Behat\Testwork\Call\Call;
-use Behat\Testwork\Call\Handler\CallHandler;
-use Behat\Testwork\Environment\Call\EnvironmentCall;
-use Behat\Testwork\Hook\Call\HookCall;
-use Gorghoa\ScenarioStateBehatExtension\Resolver\ArgumentsResolver;
+use Behat\Behat\Transformation\Call\TransformationCall,
+    Behat\Testwork\Environment\Call\EnvironmentCall,
+    Behat\Behat\Definition\Call\DefinitionCall,
+    Behat\Testwork\Call\Handler\CallHandler,
+    Behat\Testwork\Hook\Call\HookCall,
+    Behat\Testwork\Call\Call;
+
+use Gorghoa\ScenarioStateBehatExtension\Resolver\AnnotationResolver;
 
 /**
  * @author Vincent Chalamon <vincent@les-tilleuls.coop>
@@ -29,18 +31,18 @@ final class RuntimeCallHandler implements CallHandler
     private $decorated;
 
     /**
-     * @var ArgumentsResolver
+     * @var AnnotationResolver
      */
-    private $argumentsResolver;
+    private $annotationResolver;
 
     /**
-     * @param CallHandler       $decorated
-     * @param ArgumentsResolver $argumentsResolver
+     * @param CallHandler $decorated
+     * @param AnnotationResolver $annotationResolver
      */
-    public function __construct(CallHandler $decorated, ArgumentsResolver $argumentsResolver)
+    public function __construct(CallHandler $decorated, AnnotationResolver $annotationResolver)
     {
         $this->decorated = $decorated;
-        $this->argumentsResolver = $argumentsResolver;
+        $this->annotationResolver = $annotationResolver;
     }
 
     /**
@@ -72,12 +74,14 @@ final class RuntimeCallHandler implements CallHandler
             }
         }
 
-        $arguments = $this->argumentsResolver->resolve($function, $arguments);
+        $arguments = $this->annotationResolver->resolve($function, $arguments);
 
         if ($call instanceof TransformationCall) {
             $call = new TransformationCall($call->getEnvironment(), $call->getDefinition(), $call->getCallee(), $arguments);
         } elseif ($call instanceof HookCall) {
             $call = new EnvironmentCall($call->getScope()->getEnvironment(), $call->getCallee(), $arguments);
+        } elseif ($call instanceof DefinitionCall) {
+            $call = new DefinitionCall($call->getEnvironment(), $call->getFeature(), $call->getStep(), $call->getCallee(), $arguments);
         }
 
         return $this->decorated->handleCall($call);

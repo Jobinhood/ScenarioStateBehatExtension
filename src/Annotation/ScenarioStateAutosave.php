@@ -17,14 +17,8 @@ namespace Gorghoa\ScenarioStateBehatExtension\Annotation;
  * @Annotation
  * @Target("METHOD")
  */
-class ScenarioStateArgument
+class ScenarioStateAutosave
 {
-    /**
-     * Argument name in store.
-     *
-     * @var string
-     */
-    public $name;
 
     /**
      * Argument name.
@@ -38,25 +32,14 @@ class ScenarioStateArgument
      */
     public function __construct(array $options)
     {
-        if (isset($options['value'])) {
-            $options['name'] = $options['value'];
-            unset($options['value']);
-        }
-        if (!isset($options['name']) || empty(trim($options['name']))) {
+        if (!isset($options['value']) || empty(trim($options['value']))) {
             throw new \InvalidArgumentException(
-                'You must provide the store argument name in ScenarioStateArgument annotation'
+                'You must provide the function argument you wish to autosave '.
+                'to the store in ScenarioStateAutosave annotation'
             );
         }
-        $this->name = $options['name'];
-        $this->argument = isset($options['argument']) ? $options['argument'] : $this->name;
-    }
 
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
+        $this->argument = $options['value'];
     }
 
     /**

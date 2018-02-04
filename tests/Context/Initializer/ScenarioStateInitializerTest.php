@@ -13,13 +13,13 @@ namespace Gorghoa\ScenarioStateBehatExtension\Context\Initializer;
 
 use Behat\Behat\EventDispatcher\Event\ScenarioTested;
 use Gorghoa\ScenarioStateBehatExtension\Context\ScenarioStateAwareContext;
-use Gorghoa\ScenarioStateBehatExtension\ScenarioState;
+use Gorghoa\ScenarioStateBehatExtension\Store;
 use Prophecy\Argument;
 
 /**
  * @author Vincent Chalamon <vincent@les-tilleuls.coop>
  */
-class ScenarioStateInitializerTest extends \PHPUnit_Framework_TestCase
+class ScenarioStateInitializerTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var ScenarioStateInitializer

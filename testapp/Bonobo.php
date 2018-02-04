@@ -16,7 +16,7 @@ use Gorghoa\ScenarioStateBehatExtension\TestApp\Banana;
 /**
  * @author Rodrigue Villetard <rodrigue.villetard@gmail.com>
  */
-class Gorilla
+class Bonobo
 {
     /**
      * @var null|Banana
@@ -58,6 +58,11 @@ class Gorilla
     public function getName()
     {
         return $this->name;
+    }
+
+    public function throwBananaAway()
+    {
+        $this->banana = null;
     }
 
 }

@@ -9,6 +9,8 @@
  * file that was distributed with this source code.
  */
 
-require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__.'/../../../../vendor/autoload.php';
 require_once __DIR__.'/Gorilla.php';
+require_once __DIR__.'/Bonobo.php';
+require_once __DIR__.'/Banana.php';
 

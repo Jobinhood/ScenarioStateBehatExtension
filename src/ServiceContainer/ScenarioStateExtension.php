@@ -11,23 +11,26 @@
 
 namespace Gorghoa\ScenarioStateBehatExtension\ServiceContainer;
 
-use Behat\Behat\Context\ServiceContainer\ContextExtension;
-use Behat\Testwork\Argument\ServiceContainer\ArgumentExtension;
-use Behat\Testwork\Call\ServiceContainer\CallExtension;
-use Behat\Testwork\EventDispatcher\ServiceContainer\EventDispatcherExtension;
-use Behat\Testwork\ServiceContainer\Extension as ExtensionInterface;
-use Behat\Testwork\ServiceContainer\ExtensionManager;
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\AnnotationRegistry;
-use Gorghoa\ScenarioStateBehatExtension\Argument\ScenarioStateArgumentOrganiser;
-use Gorghoa\ScenarioStateBehatExtension\Call\Handler\RuntimeCallHandler;
-use Gorghoa\ScenarioStateBehatExtension\Context\Initializer\ScenarioStateInitializer;
-use Gorghoa\ScenarioStateBehatExtension\Hook\Dispatcher\ScenarioStateHookDispatcher;
-use Gorghoa\ScenarioStateBehatExtension\Hook\Tester\ScenarioStateHookableScenarioTester;
-use Gorghoa\ScenarioStateBehatExtension\Resolver\ArgumentsResolver;
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Reference;
+use Gorghoa\ScenarioStateBehatExtension\Hook\Tester\ScenarioStateHookableScenarioTester,
+    Gorghoa\ScenarioStateBehatExtension\Context\Initializer\ScenarioStateInitializer,
+    Gorghoa\ScenarioStateBehatExtension\Hook\Dispatcher\ScenarioStateHookDispatcher,
+    Gorghoa\ScenarioStateBehatExtension\Argument\ScenarioStateArgumentOrganiser,
+    Gorghoa\ScenarioStateBehatExtension\Call\Handler\RuntimeCallHandler,
+    Gorghoa\ScenarioStateBehatExtension\Resolver\AnnotationResolver;
+
+use Behat\Testwork\EventDispatcher\ServiceContainer\EventDispatcherExtension,
+    Behat\Testwork\ServiceContainer\Extension as ExtensionInterface,
+    Behat\Testwork\Argument\ServiceContainer\ArgumentExtension,
+    Behat\Behat\Context\ServiceContainer\ContextExtension,
+    Behat\Testwork\Call\ServiceContainer\CallExtension,
+    Behat\Testwork\ServiceContainer\ExtensionManager;
+
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition,
+    Symfony\Component\DependencyInjection\ContainerBuilder,
+    Symfony\Component\DependencyInjection\Reference;
+
+use Doctrine\Common\Annotations\AnnotationRegistry,
+    Doctrine\Common\Annotations\AnnotationReader;
 
 /**
  * Behat store for Behat contexts.
@@ -37,20 +40,20 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class ScenarioStateExtension implements ExtensionInterface
 {
+    const SCENARIO_STATE_ANNOTATION_RESOLVER_ID = 'scenario_state.arguments_resolver';
     const SCENARIO_STATE_ARGUMENT_ORGANISER_ID = 'argument.scenario_state.organiser';
-    const SCENARIO_STATE_DISPATCHER_ID = 'hook.scenario_state.dispatcher';
-    const SCENARIO_STATE_TESTER_ID = 'tester.scenario_state.wrapper';
     const SCENARIO_STATE_CALL_HANDLER_ID = 'call.scenario_state.call_handler';
-    const SCENARIO_STATE_ARGUMENTS_RESOLVER_ID = 'scenario_state.arguments_resolver';
-    const SCENARIO_STATE_STORE_ID = 'behatstore.context_initializer.store_aware';
-    const SCENARIO_STATE_DOCTRINE_READER_ID = 'doctrine.reader.annotation';
+    const SCENARIO_STATE_DISPATCHER_ID = 'hook.scenario_state.dispatcher';
+    const SCENARIO_STATE_INITIALIZER_ID = 'behatstore.context_initializer.scenario_state';
+    const SCENARIO_STATE_READER_ID = 'doctrine.reader.annotation';
+    const SCENARIO_STATE_TESTER_ID = 'tester.scenario_state.wrapper';
 
     /**
      * {@inheritdoc}
      */
     public function getConfigKey()
     {
-        return 'scenariostate';
+        return 'scenario_state';
     }
 
     /**
@@ -58,7 +61,8 @@ class ScenarioStateExtension implements ExtensionInterface
      */
     public function initialize(ExtensionManager $extensionManager)
     {
-        AnnotationRegistry::registerFile(__DIR__.'/../Annotation/ScenarioStateArgument.php');
+        AnnotationRegistry::registerFile(__DIR__.'/../Annotation/ScenarioStateAutoload.php');
+        AnnotationRegistry::registerFile(__DIR__.'/../Annotation/ScenarioStateAutosave.php');
     }
 
     /**
@@ -73,13 +77,16 @@ class ScenarioStateExtension implements ExtensionInterface
      */
     public function load(ContainerBuilder $container, array $config)
     {
-        // Load ScenarioState store
-        $container->register(self::SCENARIO_STATE_STORE_ID, ScenarioStateInitializer::class)
+        // Load ScenarioStateInitializer
+        $container->register(self::SCENARIO_STATE_INITIALIZER_ID, ScenarioStateInitializer::class)
             ->addTag(ContextExtension::INITIALIZER_TAG, ['priority' => 0])
             ->addTag(EventDispatcherExtension::SUBSCRIBER_TAG, ['priority' => 0]);
 
         // Declare Doctrine annotation reader as service
-        $readerDefinition = $container->register(self::SCENARIO_STATE_DOCTRINE_READER_ID, AnnotationReader::class);
+        $readerDefinition = $container->register(
+            self::SCENARIO_STATE_READER_ID, 
+            AnnotationReader::class
+        );
         // Ignore Behat annotations in reader
         $keywords = [
             'Given', 'When', 'Then',
@@ -95,10 +102,10 @@ class ScenarioStateExtension implements ExtensionInterface
         }
 
         // Arguments resolver: resolve ScenarioState arguments from annotation
-        $container->register(self::SCENARIO_STATE_ARGUMENTS_RESOLVER_ID, ArgumentsResolver::class)
+        $container->register(self::SCENARIO_STATE_ANNOTATION_RESOLVER_ID, AnnotationResolver::class)
             ->setArguments([
-                new Reference(self::SCENARIO_STATE_STORE_ID),
-                new Reference(self::SCENARIO_STATE_DOCTRINE_READER_ID),
+                new Reference(self::SCENARIO_STATE_INITIALIZER_ID),
+                new Reference(self::SCENARIO_STATE_READER_ID),
             ]);
 
         // Argument organiser
@@ -107,9 +114,9 @@ class ScenarioStateExtension implements ExtensionInterface
             ->setPublic(false)
             ->setArguments([
                 new Reference(sprintf('%s.inner', self::SCENARIO_STATE_ARGUMENT_ORGANISER_ID)),
-                new Reference(self::SCENARIO_STATE_STORE_ID),
-                new Reference(self::SCENARIO_STATE_DOCTRINE_READER_ID),
-                new Reference(self::SCENARIO_STATE_ARGUMENTS_RESOLVER_ID),
+                new Reference(self::SCENARIO_STATE_INITIALIZER_ID),
+                new Reference(self::SCENARIO_STATE_READER_ID),
+                new Reference(self::SCENARIO_STATE_ANNOTATION_RESOLVER_ID),
             ]);
 
         // Override calls process
@@ -117,7 +124,7 @@ class ScenarioStateExtension implements ExtensionInterface
             ->setDecoratedService(CallExtension::CALL_HANDLER_TAG.'.runtime')
             ->setArguments([
                 new Reference(self::SCENARIO_STATE_CALL_HANDLER_ID.'.inner'),
-                new Reference(self::SCENARIO_STATE_ARGUMENTS_RESOLVER_ID),
+                new Reference(self::SCENARIO_STATE_ANNOTATION_RESOLVER_ID),
             ]);
     }
 

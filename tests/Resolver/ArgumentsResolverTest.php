@@ -12,14 +12,14 @@
 namespace Gorghoa\ScenarioStateBehatExtension\Resolver;
 
 use Doctrine\Common\Annotations\Reader;
-use Gorghoa\ScenarioStateBehatExtension\Annotation\ScenarioStateArgument;
+use Gorghoa\ScenarioStateBehatExtension\Annotation\ScenarioStateAutoload;
 use Gorghoa\ScenarioStateBehatExtension\Context\Initializer\ScenarioStateInitializer;
-use Gorghoa\ScenarioStateBehatExtension\ScenarioStateInterface;
+use Gorghoa\ScenarioStateBehatExtension\StoreInterface;
 
 /**
  * @author Vincent Chalamon <vincent@les-tilleuls.coop>
  */
-class ArgumentsResolverTest extends \PHPUnit_Framework_TestCase
+class ArgumentsResolverTest extends \PHPUnit\Framework\TestCase
 {
     public function testResolve()
     {

@@ -11,10 +11,11 @@
 
 namespace Gorghoa\ScenarioStateBehatExtension\Argument;
 
+use Gorghoa\ScenarioStateBehatExtension\Context\Initializer\ScenarioStateInitializer,
+    Gorghoa\ScenarioStateBehatExtension\Annotation\ScenarioStateAutoload;
+
 use Behat\Testwork\Argument\ArgumentOrganiser;
 use Doctrine\Common\Annotations\Reader;
-use Gorghoa\ScenarioStateBehatExtension\Annotation\ScenarioStateArgument;
-use Gorghoa\ScenarioStateBehatExtension\Context\Initializer\ScenarioStateInitializer;
 use ReflectionFunctionAbstract;
 
 /**
@@ -31,47 +32,40 @@ final class ScenarioStateArgumentOrganiser implements ArgumentOrganiser
     /**
      * @var ScenarioStateInitializer
      */
-    private $store;
+    private $scenarioStateInitializer;
 
     /**
      * @var Reader
      */
     private $reader;
 
-    public function __construct(ArgumentOrganiser $organiser, ScenarioStateInitializer $store, Reader $reader)
+    public function __construct(
+        ArgumentOrganiser $organiser, 
+        ScenarioStateInitializer $scenarioStateInitializer, 
+        Reader $reader)
     {
         $this->baseOrganiser = $organiser;
-        $this->store = $store;
+        $this->scenarioStateInitializer = $scenarioStateInitializer;
         $this->reader = $reader;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function organiseArguments(ReflectionFunctionAbstract $function, array $match)
+    public function organiseArguments(ReflectionFunctionAbstract $function, array $arguments)
     {
-        $i = array_slice(array_keys($match), -1, 1)[0];
-        $paramsKeys = array_map(function ($element) {
-            return $element->name;
-        }, $function->getParameters());
+        // Todo: Not sure why the organiser is needed as it is called prior to
+        // the AnnotationReader
 
-        if (!$function instanceof \ReflectionMethod) {
-            return $this->baseOrganiser->organiseArguments($function, $match);
-        }
+        return $this->baseOrganiser->organiseArguments($function, $arguments);
+    }
 
-        /** @var ScenarioStateArgument[] $annotations */
-        $annotations = $this->reader->getMethodAnnotations($function);
-        $store = $this->store->getStore();
-        foreach ($annotations as $annotation) {
-            if ($annotation instanceof ScenarioStateArgument &&
-                in_array($annotation->getArgument(), $paramsKeys) &&
-                $store->hasStateFragment($annotation->getName())
-            ) {
-                $match[$annotation->getArgument()] = $store->getStateFragment($annotation->getName());
-                $match[strval(++$i)] = $store->getStateFragment($annotation->getName());
-            }
-        }
-
-        return $this->baseOrganiser->organiseArguments($function, $match);
+    /**
+     * @return Gorghoa\ScenarioStateBehatExtension\StoreInterface
+     */
+    private function getStore() 
+    {
+        return $this->scenarioStateInitializer
+            ->getStore();
     }
 }

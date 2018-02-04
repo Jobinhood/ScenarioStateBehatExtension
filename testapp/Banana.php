@@ -1,5 +1,7 @@
 <?php
 
+namespace Gorghoa\ScenarioStateBehatExtension\TestApp;
+
 /*
  * This file is part of the ScenarioStateBehatExtension project.
  *
@@ -9,18 +11,27 @@
  * file that was distributed with this source code.
  */
 
-namespace Gorghoa\ScenarioStateBehatExtension\Context;
-
-use Behat\Behat\Context\Context;
-use Gorghoa\ScenarioStateBehatExtension\StoreInterface;
-
 /**
  * @author Rodrigue Villetard <rodrigue.villetard@gmail.com>
  */
-interface ScenarioStateAwareContext extends Context
+class Banana
 {
+    private $color;
+
     /**
-     * @param StoreInterface $store
+     * @param string $color
      */
-    public function setStore(StoreInterface $store);
+    public function setColor($color)
+    {
+        $this->color = $color;
+    }
+
+    /**
+     * @return string
+     */
+    public function getColor()
+    {
+        return $this->color;
+    }
+
 }

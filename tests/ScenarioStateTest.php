@@ -16,7 +16,7 @@ use Gorghoa\ScenarioStateBehatExtension\Exception\MissingStateException;
 /**
  * @author Walter Dolce <walterdolce@gmail.com>
  */
-class ScenarioStateTest extends \PHPUnit_Framework_TestCase
+class ScenarioStateTest extends \PHPUnit\Framework\TestCase
 {
     public function testItThrowsExceptionWhenStateIsMissing()
     {

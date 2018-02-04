@@ -9,18 +9,28 @@
  * file that was distributed with this source code.
  */
 
-use Behat\Behat\Hook\Scope\AfterScenarioScope;
+use Gorghoa\ScenarioStateBehatExtension\Context\ScenarioStateAwareContext,
+    Gorghoa\ScenarioStateBehatExtension\Annotation\ScenarioStateAutoload,
+    Gorghoa\ScenarioStateBehatExtension\Context\ScenarioStateAwareTrait,
+    Gorghoa\ScenarioStateBehatExtension\StoreInterface,
+    Gorghoa\ScenarioStateBehatExtension\TestApp\Gorilla,
+    Gorghoa\ScenarioStateBehatExtension\TestApp\Bonobo,
+    Gorghoa\ScenarioStateBehatExtension\TestApp\Banana;
+
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
-use Gorghoa\ScenarioStateBehatExtension\Annotation\ScenarioStateArgument;
-use Gorghoa\ScenarioStateBehatExtension\Context\ScenarioStateAwareContext;
-use Gorghoa\ScenarioStateBehatExtension\ScenarioStateInterface;
-use Gorghoa\ScenarioStateBehatExtension\TestApp\Gorilla;
+use Behat\Behat\Hook\Scope\AfterScenarioScope;
 
 /**
  * @author Rodrigue Villetard <rodrigue.villetard@gmail.com>
  */
 class FeatureContext implements ScenarioStateAwareContext
 {
+    /**
+     * Trait which provided the context with a store to provide and access
+     * items during the lifecycle of a scenario.
+     */
+    use ScenarioStateAwareTrait;
+    
     /**
      * @BeforeSuite
      */
@@ -30,166 +40,93 @@ class FeatureContext implements ScenarioStateAwareContext
     }
 
     /**
-     * @var ScenarioStateInterface
+     * @Given there is a bonobo :bonoboStoreKey
+     * @Given there is a bonobo :bonoboStoreKey named :name
      */
-    private $scenarioState;
-
-    /**
-     * @param ScenarioStateInterface $scenarioState
-     */
-    public function setScenarioState(ScenarioStateInterface $scenarioState)
+    public function thereIsABonobo($bonoboStoreKey, $name = null)
     {
-        $this->scenarioState = $scenarioState;
+        $bonobo = new Bonobo();
+
+        if ($name != null) {
+            $bonobo->setName($name);
+        }
+
+        $this->store->add($bonoboStoreKey, $bonobo);
     }
 
     /**
-     * @BeforeScenario
+     * @Given there is a :color banana :bananaStoreKey
+     * @Given there is a banana :bananaStoreKey
      */
-    public function initBananas()
+    public function thereIsABanana($color = null, $bananaStoreKey)
     {
-        $this->scenarioState->provideStateFragment('bananas', ['foo', 'bar']);
-        $this->scenarioState->provideStateFragment('gorillaIsMale', true);
+        $banana = new Banana();
+
+        if ($color != null) {
+            $banana->setColor($color);
+        }
+
+        $this->store->add($bananaStoreKey, $banana);
     }
 
     /**
-     * @BeforeScenario
-     *
-     * @ScenarioStateArgument("bananas")
-     *
-     * @param array $bananas
+     * @Given there is a gorilla :gorillaStoreKey
+     * @Given there is a gorilla :gorillaStoreKey named :name
      */
-    public function saveBananasWithoutScopeBeforeScenario(array $bananas)
+    public function thereIsAGorilla($gorillaStoreKey, $name = null)
     {
-        \PHPUnit_Framework_Assert::assertEquals(['foo', 'bar'], $bananas);
+        $gorilla = new Gorilla();
+
+        if ($name != null) {
+            $gorilla->setName($name);
+        }
+
+        $this->store->add($gorillaStoreKey, $gorilla);
     }
 
     /**
-     * @BeforeScenario
+     * @ScenarioStateAutoload("bonobo")
+     * @ScenarioStateAutoload("banana")
      *
-     * @ScenarioStateArgument("bananas")
-     *
-     * @param BeforeScenarioScope $scope
-     * @param array               $bananas
+     * @When bonobo :bonobo takes banana :banana
      */
-    public function saveBananasWithScopeBeforeScenario(BeforeScenarioScope $scope, array $bananas)
+    public function bonoboTakesBanana($bonobo, $banana)
     {
-        \PHPUnit_Framework_Assert::assertNotNull($scope);
-        \PHPUnit_Framework_Assert::assertEquals(['foo', 'bar'], $bananas);
+        $bonobo->setBanana($banana);
     }
 
     /**
-     * @BeforeScenario
+     * @ScenarioStateAutoload("bonobo")
      *
-     * @param BeforeScenarioScope $scope
+     * @Then bonobo :bonobo should have a banana
      */
-    public function initApplesBeforeScenario(BeforeScenarioScope $scope)
+    public function bonoboShouldHaveBanana($bonobo)
     {
-        \PHPUnit_Framework_Assert::assertNotNull($scope);
+        \PHPUnit\Framework\Assert::assertInstanceOf(Banana::class, $bonobo->getBanana());
     }
 
     /**
-     * @AfterScenario
+     * @ScenarioStateAutoload("bonobo")
      *
-     * @ScenarioStateArgument("bananas")
-     *
-     * @param array $bananas
+     * @Then bonobo :bonobo should not have a banana
      */
-    public function saveBananasWithoutScopeAfterScenario(array $bananas)
+    public function bonoboShouldNotHaveBanana($bonobo)
     {
-        \PHPUnit_Framework_Assert::assertEquals(['foo', 'bar'], $bananas);
+        \PHPUnit\Framework\Assert::assertNull($bonobo->getBanana());
     }
 
     /**
-     * @AfterScenario
+     * @ScenarioStateAutoload("bonobo")
+     * @ScenarioStateAutoload("banana")
      *
-     * @ScenarioStateArgument("bananas")
-     *
-     * @param array              $bananas
-     * @param AfterScenarioScope $scope
+     * @When bonobo :bonobo throw away banana :banana
      */
-    public function saveBananasWithScopeAfterScenario(array $bananas, AfterScenarioScope $scope)
+    public function bonoboThrowAwayBanana($bonobo, $banana)
     {
-        \PHPUnit_Framework_Assert::assertNotNull($scope);
-        \PHPUnit_Framework_Assert::assertEquals(['foo', 'bar'], $bananas);
+        if ($bonobo->getBanana() === $banana) {
+            $bonobo->throwBananaAway();
+        }
     }
 
-    /**
-     * @AfterScenario
-     *
-     * @param AfterScenarioScope $scope
-     */
-    public function initApplesAfterScenario(AfterScenarioScope $scope)
-    {
-        \PHPUnit_Framework_Assert::assertNotNull($scope);
-    }
 
-    /**
-     * @When the bonobo takes a banana
-     */
-    public function takeBanana()
-    {
-        $this->scenarioState->provideStateFragment('scenarioBanana', 'Yammy Banana');
-    }
-
-    /**
-     * @transform :gorilla
-     *
-     * @ScenarioStateArgument(name="gorillaIsMale", argument="isMale")
-     *
-     * @param string $gorilla
-     * @param bool   $isMale
-     *
-     * @return Gorilla
-     */
-    public function transformGorilla($gorilla, $isMale)
-    {
-        $monkey = new Gorilla();
-        $monkey->setName($gorilla);
-        $monkey->setMale($isMale);
-
-        return $monkey;
-    }
-
-    /**
-     * @When gives this banana to :gorilla
-     *
-     * @ScenarioStateArgument("scenarioBanana")
-     *
-     * @param string  $scenarioBanana
-     * @param Gorilla $gorilla
-     */
-    public function giveBananaToGorilla($scenarioBanana, Gorilla $gorilla)
-    {
-        \PHPUnit_Framework_Assert::assertEquals('Yammy Banana', $scenarioBanana);
-        $gorilla->setBanana($scenarioBanana);
-        $this->scenarioState->provideStateFragment('scenarioGorilla', $gorilla);
-    }
-
-    /**
-     * @Then the gorilla has the banana
-     *
-     * @ScenarioStateArgument("scenarioBanana")
-     * @ScenarioStateArgument(name="scenarioGorilla", argument="gorilla")
-     *
-     * @param string  $scenarioBanana
-     * @param Gorilla $gorilla
-     */
-    public function gorillaHasBanana($scenarioBanana, Gorilla $gorilla)
-    {
-        \PHPUnit_Framework_Assert::assertEquals('Yammy Banana', $scenarioBanana);
-        \PHPUnit_Framework_Assert::assertEquals('Yammy Banana', $gorilla->getBanana());
-    }
-
-    /**
-     * @Then the gorilla is named :name
-     *
-     * @ScenarioStateArgument(name="scenarioGorilla", argument="gorilla")
-     *
-     * @param string  $name
-     * @param Gorilla $gorilla
-     */
-    public function gorillaIsCorrectlyNamed($name, Gorilla $gorilla)
-    {
-        \PHPUnit_Framework_Assert::assertEquals($name, $gorilla->getName());
-    }
 }

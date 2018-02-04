@@ -11,7 +11,7 @@
 
 namespace Gorghoa\ScenarioStateBehatExtension\Context;
 
-use Gorghoa\ScenarioStateBehatExtension\ScenarioStateInterface;
+use Gorghoa\ScenarioStateBehatExtension\StoreInterface;
 
 /**
  * @author Vincent Chalamon <vincentchalamon@gmail.com>
@@ -19,15 +19,15 @@ use Gorghoa\ScenarioStateBehatExtension\ScenarioStateInterface;
 trait ScenarioStateAwareTrait
 {
     /**
-     * @var ScenarioStateInterface
+     * @var StoreInterface
      */
-    private $scenarioState;
+    private $store;
 
     /**
-     * @param ScenarioStateInterface $scenarioState
+     * @param StoreInterface $store
      */
-    public function setScenarioState(ScenarioStateInterface $scenarioState)
+    public function setStore(StoreInterface $store)
     {
-        $this->scenarioState = $scenarioState;
+        $this->store = $store;
     }
 }
