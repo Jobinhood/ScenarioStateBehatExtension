@@ -183,8 +183,8 @@ It automatically replaced the string "@banana" from your feature with the `Banan
 ## Contribute
 
 ```
-$ wget git@github.com:Jobinhood/ScenarioStateBehatExtension.git
-$ cd ScenarioStateBehatExtension
+$ git clone git@github.com:Jobinhood/ScenarioStateBehatExtension.git
+$ cd ScenarioStateBehatExtension && composer self-update && composer update
 
 # Run Behat
 $ ./vendor/bin/behat -c ./testapp/behat.yml
