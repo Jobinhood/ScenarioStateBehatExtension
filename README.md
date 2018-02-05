@@ -107,7 +107,7 @@ public function thereIsABanana($color = null, $bananaStoreKey = null)
     $banana = new Banana($color);
 
     if (null != $bananaStoreKey) {
-        $this->store->add('@banana', $banana);
+        $this->store->add($bananaStoreKey, $banana);
     }
 }
 ```
