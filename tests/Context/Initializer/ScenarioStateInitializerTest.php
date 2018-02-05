@@ -42,7 +42,7 @@ class ScenarioStateInitializerTest extends \PHPUnit\Framework\TestCase
     public function testInitializeContext()
     {
         $contextMock = $this->prophesize(ScenarioStateAwareContext::class);
-        $contextMock->setScenarioState(Argument::type(ScenarioState::class))->shouldBeCalledTimes(1);
+        $contextMock->setStore(Argument::type(Store::class))->shouldBeCalledTimes(1);
         $this->initializer->initializeContext($contextMock->reveal());
     }
 }

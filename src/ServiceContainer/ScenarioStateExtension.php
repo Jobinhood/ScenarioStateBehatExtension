@@ -14,7 +14,6 @@ namespace Gorghoa\ScenarioStateBehatExtension\ServiceContainer;
 use Gorghoa\ScenarioStateBehatExtension\Hook\Tester\ScenarioStateHookableScenarioTester,
     Gorghoa\ScenarioStateBehatExtension\Context\Initializer\ScenarioStateInitializer,
     Gorghoa\ScenarioStateBehatExtension\Hook\Dispatcher\ScenarioStateHookDispatcher,
-    Gorghoa\ScenarioStateBehatExtension\Argument\ScenarioStateArgumentOrganiser,
     Gorghoa\ScenarioStateBehatExtension\Call\Handler\RuntimeCallHandler,
     Gorghoa\ScenarioStateBehatExtension\Resolver\AnnotationResolver;
 
@@ -41,7 +40,6 @@ use Doctrine\Common\Annotations\AnnotationRegistry,
 class ScenarioStateExtension implements ExtensionInterface
 {
     const SCENARIO_STATE_ANNOTATION_RESOLVER_ID = 'scenario_state.arguments_resolver';
-    const SCENARIO_STATE_ARGUMENT_ORGANISER_ID = 'argument.scenario_state.organiser';
     const SCENARIO_STATE_CALL_HANDLER_ID = 'call.scenario_state.call_handler';
     const SCENARIO_STATE_DISPATCHER_ID = 'hook.scenario_state.dispatcher';
     const SCENARIO_STATE_INITIALIZER_ID = 'behatstore.context_initializer.scenario_state';
@@ -106,17 +104,6 @@ class ScenarioStateExtension implements ExtensionInterface
             ->setArguments([
                 new Reference(self::SCENARIO_STATE_INITIALIZER_ID),
                 new Reference(self::SCENARIO_STATE_READER_ID),
-            ]);
-
-        // Argument organiser
-        $container->register(self::SCENARIO_STATE_ARGUMENT_ORGANISER_ID, ScenarioStateArgumentOrganiser::class)
-            ->setDecoratedService(ArgumentExtension::PREG_MATCH_ARGUMENT_ORGANISER_ID)
-            ->setPublic(false)
-            ->setArguments([
-                new Reference(sprintf('%s.inner', self::SCENARIO_STATE_ARGUMENT_ORGANISER_ID)),
-                new Reference(self::SCENARIO_STATE_INITIALIZER_ID),
-                new Reference(self::SCENARIO_STATE_READER_ID),
-                new Reference(self::SCENARIO_STATE_ANNOTATION_RESOLVER_ID),
             ]);
 
         // Override calls process

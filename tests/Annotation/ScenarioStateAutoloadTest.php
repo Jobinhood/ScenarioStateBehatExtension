@@ -24,7 +24,7 @@ class ScenarioStateAutoloadTest extends \PHPUnit\Framework\TestCase
      */
     public function testWithValue(array $options, $argument)
     {
-        $annotation = new ScenarioStateAutoload($arguments);
+        $annotation = new ScenarioStateAutoload($options);
         $this->assertEquals($argument, $annotation->getArgument());
     }
 

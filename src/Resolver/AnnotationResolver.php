@@ -49,6 +49,7 @@ class AnnotationResolver
      */
     public function resolve(\ReflectionMethod $function, array $arguments)
     {
+
         // No `@ScenarioStateAutoload` or '@ScenarioStateAutosave' annotations are found
         if ( null === $this->reader->getMethodAnnotation($function, ScenarioStateAutoload::class) &&
              null === $this->reader->getMethodAnnotation($function, ScenarioStateAutosave::class)) {
@@ -74,44 +75,44 @@ class AnnotationResolver
 
             if ($annotation instanceof ScenarioStateAutoload) {
 
-                if (! in_array($annotation->getArgument(), $paramKeys)) {
+                $argument = $annotation->getArgument();
+                if (! in_array($argument, $paramKeys)) {
                     throw new \Exception(
                         sprintf(
                             '%s does not exist in existing function arguments: %s.',
-                            $annotation->getArgument(),
+                            $argument,
                             implode(" | ", $paramKeys)
                         )
                     );
                 }
 
-                $storeKey = $arguments[$annotation->getArgument()];
+                $storeKey = $arguments[$argument];
                 if (! $this->getStore()->has($storeKey)) {
-                    throw new \Exception(
-                        sprintf(
+                    if (null === $this->getStore()->getKeys()) {
+                        $message = sprintf(
+                            '%s store key does not exist in the store. The store is '.
+                            'currently empty.',
+                            $storeKey
+                        );
+                    } else {
+                        $message = sprintf(
                             '%s store key does not exist in the store. Current store '.
                             'keys are %s.',
-                            $arguments[$annotation->getArgument()],
+                            $storeKey,
                             implode(" | ", $this->getStore()->getKeys())
-                        )
-                    );
+                        );
 
+                    }
+                    throw new \Exception($message);
                 }
 
-                $storeKey = $arguments[$annotation->getArgument()];
-                $arguments[$annotation->getArgument()] = $this->getStore()
+                $arguments[$argument] = $this->getStore()
                     ->get($storeKey);
 
             }
         }
 
-        // Reorder arguments
-        $params = [];
-        foreach ($function->getParameters() as $parameter) {
-            $name = $parameter->getName();
-            $params[$name] = isset($arguments[$name]) ? $arguments[$name] : $arguments[$parameter->getPosition()];
-        }
-
-        return $params;
+        return $arguments;
     }
 
     /**

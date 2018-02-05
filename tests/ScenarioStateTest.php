@@ -21,6 +21,6 @@ class ScenarioStateTest extends \PHPUnit\Framework\TestCase
     public function testItThrowsExceptionWhenStateIsMissing()
     {
         $this->setExpectedException(MissingStateException::class);
-        (new ScenarioState())->getStateFragment('not_existing_state');
+        (new Store())->get('not_existing_state');
     }
 }
