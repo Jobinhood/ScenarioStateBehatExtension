@@ -112,7 +112,7 @@ public function thereIsABanana($color = null, $bananaStoreKey = null)
 }
 ```
 
-This gives you the ability to store `$banana` in the store:
+This stored `$banana` in the store. Your `.feature` would be like:
 
 ```gherkin
 # Will store the banana in the store under the "@banana" store key
@@ -125,7 +125,7 @@ Given there is a "yellow" banana
 
 ### Getting stuff from the store
 
-To get stuff from the store, you can do it manually or via the 'ScenarioStateAutoload' annotation.
+To get stuff from the store, you can do it manually or via the `ScenarioStateAutoload` annotation.
 
 #### 1. Manually
 
@@ -150,6 +150,7 @@ When a bonobo eats banana "@banana"
 
 #### 2. The Lazy way
 
+```php
 /**
  * @Then banana :banana should be empty
 
